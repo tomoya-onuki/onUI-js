@@ -1,481 +1,67 @@
-// HTML特殊文字を使えるようにした
-const domParser = new DOMParser();
-const parseHTMLcode = (code) => {
-  return String(domParser.parseFromString(code, 'text/html').body.textContent)
-}
-
-export class onUI {
-  selector = ''
-  toggle0Num = 0
-  toggle1Num = 0
-
-  constructor() {
-  }
-
-  select(id) {
-    const reg = /^#.+/
-    if (reg.test(id)) {
-      this.selector = id
-    }
-    return this
-  }
-
-  on(eventType, callback) {
-    const $me = document.querySelector(this.selector)
-    let allevent = ['click', 'dblclick', 'mousedown', 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'keypress', 'keyup', 'keydown', 'change', 'input']
-
-    if ($me !== null) {
-      if (allevent.find(e => e === eventType) != undefined) {
-        $me.querySelectorAll('input').forEach($input => {
-          $input.addEventListener(eventType, function (event) {
-            callback(event)
-          })
-        })
-      }
-    }
-
-    return this
-  }
-
-  //　トグル用
-  get checked() {
-    const $me = document.querySelector(this.selector)
-    let type = $me.getAttribute('class')
-
-    if (type === 'toggle-btn-box' || type === 'toggle-switch-box') {
-      let $input = $me.querySelector('input')
-      return $input.checked
-    }
-
-    return false
-  }
-  set checked(flag) {
-    const $me = document.querySelector(this.selector)
-    let type = $me.getAttribute('class')
-
-    if (type === 'toggle-btn-box' || type === 'toggle-switch-box') {
-      let $input = $me.querySelector('input')
-      $input.checked = flag
-    }
-
-  }
-
-  // フォントセレクタ用
-  get font() {
-    const $me = document.querySelector(this.selector)
-
-    if ($me.getAttribute('class') === 'font-selector-box') {
-      const $label = $me.querySelector('.label')
-      String($label.style.fontFamily)
-      return String($label.style.fontFamily)
-    }
-
-    return ''
-  }
-
-  // スライダ用
-  get val() {
-    const $me = document.querySelector(this.selector)
-    let type = $me.getAttribute('class')
-
-    if (type === 'mulitslider-box') {
-      const $slider0 = $me.querySelector('.primary')
-      const $slider1 = $me.querySelector('.secondary')
-
-      const min = Math.min(Number($slider0.value), Number($slider1.value))
-      const max = Math.max(Number($slider0.value), Number($slider1.value))
-      return `${min},${max}`
-    }
-
-    return ''
-  }
-
-  set val(v) {
-    const $me = document.querySelector(this.selector)
-    let type = $me.getAttribute('class')
-
-    if (type === 'multislider-box') {
-      let value = v.split(',')
-      const $slider0 = $me.querySelector('.primary')
-      const $slider1 = $me.querySelector('.secondary')
-
-      $slider0.value = value[0]
-      $slider1.value = value[1]
-    }
-  }
-
-
-  // メニュー用
-  get active() {
-    const $me = document.querySelector(this.selector)
-    let type = $me.getAttribute('class')
-
-    // メニュー系
-    if (type === 'accordion' || type === 'tab') {
-      let num = -1
-      $me.querySelectorAll('input').forEach((e, i) => {
-        if (e.checked) num = i
-      })
-
-      return num
-    }
-    return -1
-  }
-  set active(targetIdx) {
-    const $me = document.querySelector(this.selector)
-    let type = $me.getAttribute('class')
-    // メニュー系
-    if (type === 'accordion') {
-      // 複数のinput要素
-      $me.querySelectorAll('input').forEach((e, idx) => {
-        if (idx === targetIdx) {
-          e.checked = true
-        } else {
-          e.checked = false
-        }
-      })
-      $me.querySelectorAll('.accordion-item').forEach((e, idx) => {
-        const $item = e
-        if (idx === targetIdx) {
-          $item.style.display = 'block'
-        } else {
-          $item.style.display = 'none'
-        }
-      })
-    }
-    if (type === 'tab') {
-      // 複数のinput要素
-      $me.querySelectorAll('input').forEach((e, idx) => {
-        if (idx === targetIdx) {
-          e.checked = true
-        } else {
-          e.checked = false
-        }
-      })
-      $me.querySelectorAll('.tab-item').forEach((e, idx) => {
-        const $item = e
-        if (idx === targetIdx) {
-          $item.style.display = 'block'
-        } else {
-          $item.style.display = 'none'
-        }
-      })
-    }
-  }
-
-  toggleSwitch() {
-    const $toggleSw = document.querySelector(this.selector)
-    $toggleSw.classList.add("toggle-switch-box")
-
-    const id = $toggleSw.getAttribute('id') != null ? `${$toggleSw.getAttribute('id')}-toggle-sw${this.toggle0Num}` : `toggle-sw${this.toggle0Num}`
-
-    let $chbox = document.createElement('input')
-    $chbox.setAttribute('type', 'checkbox')
-    $chbox.setAttribute('id', id)
-
-    let $label = document.createElement("label")
-    $label.setAttribute('for', id)
-    $label.classList.add('check')
-
-    let $thumb = document.createElement('div')
-    $thumb.classList.add('thumb')
-    $label.appendChild($thumb)
-
-    $toggleSw.appendChild($chbox)
-    $toggleSw.appendChild($label)
-
-    this.toggle0Num++
-
-    return this
-  }
-
-  toggleBtn(text) {
-    const $box = document.querySelector(this.selector)
-    $box.classList.add('toggle-btn-box')
-
-    let id = $box.getAttribute('id') == null ? `${$box.getAttribute('id')}-toggle-btn${this.toggle1Num}` : `toggle-btn${this.toggle1Num}`
-    $box.textContent = ''
-
-    const $chbox = document.createElement('input')
-    $chbox.setAttribute('type', 'checkbox')
-    $chbox.setAttribute('id', id)
-    $chbox.classList.add('toggle-btn')
-
-    const $label = document.createElement('label')
-    $label.textContent = text
-    $label.setAttribute('for', id)
-    // $label.classList.add(cla)
-    $label.classList.add('check')
-
-    $box.appendChild($chbox)
-    $box.appendChild($label)
-
-    this.toggle1Num++
-
-    return this
-  }
-
-  fontSelector(fontList) {
-    // 外箱の作成
-    const $selectBox = document.querySelector(this.selector)
-    let id = $selectBox.getAttribute('id') !== null ? `${$selectBox.getAttribute('id')}-font` : ''
-
-    // const $selectBox = elem
-    $selectBox.classList.add('font-selector-box')
-    // ドロップダウンリスト
-    const $list = document.createElement("div")
-    $list.classList.add('list')
-
-    const $label = document.createElement("div")
-    $label.classList.add('label')
-
-    const $btn = document.createElement("div")
-    $btn.classList.add('down-btn')
-    $btn.textContent = parseHTMLcode("&#9660;")
-
-    fontList.forEach(function (font, idx) {
-      const text = font.replace(/["']/g, '')
-      const $item = document.createElement('input')
-      $item.setAttribute('type', 'radio')
-      $item.setAttribute('name', id)
-      $list.appendChild($item)
-
-      // 最初の選択肢をデフォルトの選択肢にする
-      if (idx === 0) {
-        $item.checked = true
-        $label.textContent = text
-        $label.style.fontFamily = font
-      } else {
-        $item.checked = false
-      }
-
-      // ドロップダウンでみえる選択肢
-      let $listLabel = document.createElement('label')
-      $listLabel.textContent = text
-      $listLabel.setAttribute('for', String(idx))
-      $listLabel.classList.add('item')
-      $listLabel.style.fontFamily = font
-      $list.appendChild($listLabel)
-
-      // ラジオボタンは非表示にして、上のラベルと対応させる
-      $item.classList.add('radio')
-      $item.setAttribute('id', String(idx))
-
-      // チェックが入ってるやつをデフォルトに
-      if ($item.checked) {
-        $label.textContent = text
-      }
-    })
-
-    $selectBox.appendChild($btn)
-    $selectBox.appendChild($label)
-    $selectBox.appendChild($list)
-
-    $label.addEventListener('click', function () {
-      if ($list.style.display = "none") {
-        $list.style.display = "block"
-      } else {
-        $list.style.display = "none"
-      }
-    })
-
-    $list.querySelectorAll('.item').forEach(function (elem, i) {
-      const me = elem
-      elem.addEventListener('click', function () {
-        let dv = document.defaultView
-        if (dv != null) {
-          const font = dv.getComputedStyle(elem, null).fontFamily
-          $label.style.fontFamily = font
-        }
-        const text = String(elem.textContent)
-        $label.textContent = text
-        $list.style.display = 'none'
-      })
-    })
-
-    return this
-  }
-
-
-  accordion(labelList) {
-    const $accordionBox = document.querySelector(this.selector)
-    $accordionBox.classList.add('accordion')
-
-    $accordionBox.querySelectorAll('.accordion-item').forEach(function (elem, idx) {
-      const $item = elem
-      // $item.classList.add('accordion-item')
-
-      const id = $accordionBox.getAttribute('id') != null ? String($accordionBox.getAttribute('id')) : ''
-      const isCheck = false
-
-
-      const $label = document.createElement('label')
-      $label.setAttribute('for', `${id}-hide-btn${idx}`)
-      $label.textContent = labelList[idx] !== undefined ? labelList[idx] : parseHTMLcode('&nbsp;')
-
-      const $btn = document.createElement('span')
-      $btn.textContent = parseHTMLcode('&#9650;')
-      $btn.classList.add('hide-btn')
-
-      $label.appendChild($btn)
-
-      const $chbox = document.createElement('input')
-      $chbox.setAttribute('id', `${id}-hide-btn${idx}`)
-      $chbox.setAttribute('type', 'checkbox')
-      $chbox.classList.add('hide-checkbox')
-      $chbox.checked = isCheck
-
-
-      $item.insertAdjacentElement("beforebegin", $label)
-      $item.insertAdjacentElement("beforebegin", $chbox)
-
-      if (!isCheck) {
-        $btn.textContent = parseHTMLcode('&#9660;')
-        $item.style.display = 'none'
-      }
-
-      $chbox.addEventListener('input', function () {
-        const isShow = $chbox.checked
-
-        $accordionBox.querySelectorAll('.accordion-item').forEach(function (elem) {
-          let $me = elem
-          $me.style.display = 'none'
-        })
-        $accordionBox.querySelectorAll('.hide-checkbox').forEach(function (elem) {
-          let $me = elem
-          $me.checked = false
-        })
-        $accordionBox.querySelectorAll('.hide-btn').forEach(function (elem) {
-          let $me = elem
-          $me.textContent = parseHTMLcode('&#9660;')
-        })
-
-        $chbox.checked = isShow
-        if (isShow) {
-          $btn.textContent = parseHTMLcode('&#9650;')
-          $item.style.display = 'block'
-        } else {
-          $btn.textContent = parseHTMLcode('&#9660;')
-          $item.style.display = 'none'
-        }
-      })
-    })
-
-    return this
-  }
-
-  multiSlider() {
-    const $me = document.querySelector(this.selector)
-    const id = String($me.getAttribute('id'))
-    const min = String($me.getAttribute('min'))
-    const max = String($me.getAttribute('max'))
-    const step = String($me.getAttribute('step'))
-    const val = String($me.getAttribute('value')).split(',')
-
-    // 外枠
-    const $sliderBox = document.createElement('div')
-    $sliderBox.classList.add('mulitslider-box')
-    $sliderBox.setAttribute('id', id)
-    $me.insertAdjacentElement("beforebegin", $sliderBox)
-    $me.remove()
-
-    // メインのスライダ
-    const $slider0 = document.createElement('input')
-    $slider0.classList.add('primary')
-    $slider0.setAttribute('type', 'range')
-    $slider0.setAttribute('min', min)
-    $slider0.setAttribute('max', max)
-    $slider0.setAttribute('step', step)
-    $slider0.value = val[0]
-
-    // サブのスライダ
-    const $slider1 = document.createElement('input')
-    $slider1.classList.add('secondary')
-    $slider1.setAttribute('type', 'range')
-    $slider1.setAttribute('min', min)
-    $slider1.setAttribute('max', max)
-    $slider1.setAttribute('step', step)
-    $slider1.value = val[1]
-
-    $sliderBox.appendChild($slider0)
-    $sliderBox.appendChild($slider1)
-
-    updateSlider()
-
-    function updateSlider() {
-      const vmin = Math.min(Number($slider0.value), Number($slider1.value))
-      const vmax = Math.max(Number($slider0.value), Number($slider1.value))
-
-      const min = Number($slider0.getAttribute('min'))
-      const max = Number($slider0.getAttribute('max'))
-
-      let ratio0 = Math.round((vmin - min) / (max - min) * 100)
-      let ratio1 = Math.round((vmax - min) / (max - min) * 100)
-
-      $slider0.style.background = `linear-gradient(90deg, #444 ${ratio0}%, #4287f5 ${ratio0}%, #4287f5 ${ratio1}%, #444 ${ratio1}%)`
-    }
-    $slider0.addEventListener('input', function (elem) {
-      updateSlider()
-    })
-    $slider1.addEventListener('input', function (elem) {
-      updateSlider()
-    })
-
-    return this
-  }
-
-  tab(labelList) {
-    const $tabBox = document.querySelector(this.selector)
-    $tabBox.classList.add('tab')
-
-    const $selectorBox = document.createElement('div')
-    $selectorBox.classList.add('selector-box')
-
-    $tabBox.querySelectorAll('.tab-item').forEach(function (elem, idx) {
-      const $item = elem
-      // $item.classList.add('tab-item')
-
-      const id = $tabBox.getAttribute('id') != null ? String($tabBox.getAttribute('id')) : ''
-
-      const $label = document.createElement('label')
-      $label.setAttribute('for', `${id}-tab-btn${idx}`)
-      $label.classList.add('tab-label')
-      $label.textContent = labelList[idx] !== undefined ? labelList[idx] : parseHTMLcode('&nbsp;')
-
-      const $radioBtn = document.createElement('input')
-      $radioBtn.setAttribute('id', `${id}-tab-btn${idx}`)
-      $radioBtn.setAttribute('type', 'radio')
-      $radioBtn.setAttribute('name', id)
-      if (idx === 0) $radioBtn.checked = true
-      else $radioBtn.checked = false
-
-      $selectorBox.appendChild($radioBtn)
-      $selectorBox.appendChild($label)
-
-      if (!$radioBtn.checked) {
-        $item.style.display = 'none'
-      }
-
-      $radioBtn.addEventListener('input', function () {
-        const isShow = $radioBtn.checked
-
-        $tabBox.querySelectorAll('.tab-item').forEach(function (elem) {
-          let $me = elem
-          $me.style.display = 'none'
-        })
-
-        if (isShow) {
-          $item.style.display = 'block'
-        } else {
-          $item.style.display = 'none'
-        }
-      })
-    })
-
-    $tabBox.insertAdjacentElement("afterbegin", $selectorBox)
-
-    return this
-  }
-}
-
-module.export = onUI
+/*
+ * ATTENTION: The "eval" devtool has been used (maybe by default in mode: "development").
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./src/index.ts":
+/*!**********************!*\
+  !*** ./src/index.ts ***!
+  \**********************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+eval("\nvar __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {\n    if (k2 === undefined) k2 = k;\n    var desc = Object.getOwnPropertyDescriptor(m, k);\n    if (!desc || (\"get\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {\n      desc = { enumerable: true, get: function() { return m[k]; } };\n    }\n    Object.defineProperty(o, k2, desc);\n}) : (function(o, m, k, k2) {\n    if (k2 === undefined) k2 = k;\n    o[k2] = m[k];\n}));\nvar __exportStar = (this && this.__exportStar) || function(m, exports) {\n    for (var p in m) if (p !== \"default\" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);\n};\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst onUI_1 = __webpack_require__(/*! ./onUI */ \"./src/onUI.ts\");\n__exportStar(__webpack_require__(/*! ./onUI */ \"./src/onUI.ts\"), exports);\nconst onui = function () {\n    return new onUI_1.onUI();\n};\nexports[\"default\"] = onui;\n\n\n//# sourceURL=webpack://onui-js/./src/index.ts?");
+
+/***/ }),
+
+/***/ "./src/onUI.ts":
+/*!*********************!*\
+  !*** ./src/onUI.ts ***!
+  \*********************/
+/***/ ((__unused_webpack_module, exports) => {
+
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nexports.onUI = void 0;\n// HTML特殊文字を使えるようにした\nconst domParser = new DOMParser();\nconst parseHTMLcode = (code) => {\n    return String(domParser.parseFromString(code, 'text/html').body.textContent);\n};\nclass onUI {\n    selector = '';\n    toggle0Num = 0;\n    toggle1Num = 0;\n    constructor() {\n    }\n    select(id) {\n        const reg = /^#.+/;\n        if (reg.test(id)) {\n            this.selector = id;\n        }\n        return this;\n    }\n    on(eventType, callback) {\n        const $me = document.querySelector(this.selector);\n        let allevent = ['click', 'dblclick', 'mousedown', 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'keypress', 'keyup', 'keydown', 'change', 'input'];\n        if ($me !== null) {\n            if (allevent.find(e => e === eventType) != undefined) {\n                $me.querySelectorAll('input').forEach($input => {\n                    $input.addEventListener(eventType, function (event) {\n                        callback(event);\n                    });\n                });\n            }\n        }\n        return this;\n    }\n    //　トグル用\n    get checked() {\n        const $me = document.querySelector(this.selector);\n        let type = $me.getAttribute('class');\n        if (type === 'toggle-btn-box' || type === 'toggle-switch-box') {\n            let $input = $me.querySelector('input');\n            return $input.checked;\n        }\n        return false;\n    }\n    set checked(flag) {\n        const $me = document.querySelector(this.selector);\n        let type = $me.getAttribute('class');\n        if (type === 'toggle-btn-box' || type === 'toggle-switch-box') {\n            let $input = $me.querySelector('input');\n            $input.checked = flag;\n        }\n    }\n    // フォントセレクタ用\n    get font() {\n        const $me = document.querySelector(this.selector);\n        if ($me.getAttribute('class') === 'font-selector-box') {\n            const $label = $me.querySelector('.label');\n            String($label.style.fontFamily);\n            return String($label.style.fontFamily);\n        }\n        return '';\n    }\n    // スライダ用\n    get val() {\n        const $me = document.querySelector(this.selector);\n        let type = $me.getAttribute('class');\n        if (type === 'mulitslider-box') {\n            const $slider0 = $me.querySelector('.primary');\n            const $slider1 = $me.querySelector('.secondary');\n            const min = Math.min(Number($slider0.value), Number($slider1.value));\n            const max = Math.max(Number($slider0.value), Number($slider1.value));\n            return `${min},${max}`;\n        }\n        return '';\n    }\n    set val(v) {\n        const $me = document.querySelector(this.selector);\n        let type = $me.getAttribute('class');\n        if (type === 'multislider-box') {\n            let value = v.split(',');\n            const $slider0 = $me.querySelector('.primary');\n            const $slider1 = $me.querySelector('.secondary');\n            $slider0.value = value[0];\n            $slider1.value = value[1];\n        }\n    }\n    // メニュー用\n    get active() {\n        const $me = document.querySelector(this.selector);\n        let type = $me.getAttribute('class');\n        // メニュー系\n        if (type === 'accordion' || type === 'tab') {\n            let num = -1;\n            $me.querySelectorAll('input').forEach((e, i) => {\n                if (e.checked)\n                    num = i;\n            });\n            return num;\n        }\n        return -1;\n    }\n    set active(targetIdx) {\n        const $me = document.querySelector(this.selector);\n        let type = $me.getAttribute('class');\n        // メニュー系\n        if (type === 'accordion') {\n            // 複数のinput要素\n            $me.querySelectorAll('input').forEach((e, idx) => {\n                if (idx === targetIdx) {\n                    e.checked = true;\n                }\n                else {\n                    e.checked = false;\n                }\n            });\n            $me.querySelectorAll('.accordion-item').forEach((e, idx) => {\n                const $item = e;\n                if (idx === targetIdx) {\n                    $item.style.display = 'block';\n                }\n                else {\n                    $item.style.display = 'none';\n                }\n            });\n        }\n        if (type === 'tab') {\n            // 複数のinput要素\n            $me.querySelectorAll('input').forEach((e, idx) => {\n                if (idx === targetIdx) {\n                    e.checked = true;\n                }\n                else {\n                    e.checked = false;\n                }\n            });\n            $me.querySelectorAll('.tab-item').forEach((e, idx) => {\n                const $item = e;\n                if (idx === targetIdx) {\n                    $item.style.display = 'block';\n                }\n                else {\n                    $item.style.display = 'none';\n                }\n            });\n        }\n    }\n    toggleSwitch() {\n        const $toggleSw = document.querySelector(this.selector);\n        $toggleSw.classList.add(\"toggle-switch-box\");\n        const id = $toggleSw.getAttribute('id') != null ? `${$toggleSw.getAttribute('id')}-toggle-sw${this.toggle0Num}` : `toggle-sw${this.toggle0Num}`;\n        let $chbox = document.createElement('input');\n        $chbox.setAttribute('type', 'checkbox');\n        $chbox.setAttribute('id', id);\n        let $label = document.createElement(\"label\");\n        $label.setAttribute('for', id);\n        $label.classList.add('check');\n        let $thumb = document.createElement('div');\n        $thumb.classList.add('thumb');\n        $label.appendChild($thumb);\n        $toggleSw.appendChild($chbox);\n        $toggleSw.appendChild($label);\n        this.toggle0Num++;\n        return this;\n    }\n    toggleBtn(text) {\n        const $box = document.querySelector(this.selector);\n        $box.classList.add('toggle-btn-box');\n        let id = $box.getAttribute('id') == null ? `${$box.getAttribute('id')}-toggle-btn${this.toggle1Num}` : `toggle-btn${this.toggle1Num}`;\n        $box.textContent = '';\n        const $chbox = document.createElement('input');\n        $chbox.setAttribute('type', 'checkbox');\n        $chbox.setAttribute('id', id);\n        $chbox.classList.add('toggle-btn');\n        const $label = document.createElement('label');\n        $label.textContent = text;\n        $label.setAttribute('for', id);\n        // $label.classList.add(cla)\n        $label.classList.add('check');\n        $box.appendChild($chbox);\n        $box.appendChild($label);\n        this.toggle1Num++;\n        return this;\n    }\n    fontSelector(fontList) {\n        // 外箱の作成\n        const $selectBox = document.querySelector(this.selector);\n        let id = $selectBox.getAttribute('id') !== null ? `${$selectBox.getAttribute('id')}-font` : '';\n        // const $selectBox: HTMLElement = <HTMLElement>elem\n        $selectBox.classList.add('font-selector-box');\n        // ドロップダウンリスト\n        const $list = document.createElement(\"div\");\n        $list.classList.add('list');\n        const $label = document.createElement(\"div\");\n        $label.classList.add('label');\n        const $btn = document.createElement(\"div\");\n        $btn.classList.add('down-btn');\n        $btn.textContent = parseHTMLcode(\"&#9660;\");\n        fontList.forEach(function (font, idx) {\n            const text = font.replace(/[\"']/g, '');\n            const $item = document.createElement('input');\n            $item.setAttribute('type', 'radio');\n            $item.setAttribute('name', id);\n            $list.appendChild($item);\n            // 最初の選択肢をデフォルトの選択肢にする\n            if (idx === 0) {\n                $item.checked = true;\n                $label.textContent = text;\n                $label.style.fontFamily = font;\n            }\n            else {\n                $item.checked = false;\n            }\n            // ドロップダウンでみえる選択肢\n            let $listLabel = document.createElement('label');\n            $listLabel.textContent = text;\n            $listLabel.setAttribute('for', String(idx));\n            $listLabel.classList.add('item');\n            $listLabel.style.fontFamily = font;\n            $list.appendChild($listLabel);\n            // ラジオボタンは非表示にして、上のラベルと対応させる\n            $item.classList.add('radio');\n            $item.setAttribute('id', String(idx));\n            // チェックが入ってるやつをデフォルトに\n            if ($item.checked) {\n                $label.textContent = text;\n            }\n        });\n        $selectBox.appendChild($btn);\n        $selectBox.appendChild($label);\n        $selectBox.appendChild($list);\n        $label.addEventListener('click', function () {\n            if ($list.style.display = \"none\") {\n                $list.style.display = \"block\";\n            }\n            else {\n                $list.style.display = \"none\";\n            }\n        });\n        $list.querySelectorAll('.item').forEach(function (elem, i) {\n            const me = elem;\n            elem.addEventListener('click', function () {\n                let dv = document.defaultView;\n                if (dv != null) {\n                    const font = dv.getComputedStyle(elem, null).fontFamily;\n                    $label.style.fontFamily = font;\n                }\n                const text = String(elem.textContent);\n                $label.textContent = text;\n                $list.style.display = 'none';\n            });\n        });\n        return this;\n    }\n    accordion(labelList) {\n        const $accordionBox = document.querySelector(this.selector);\n        $accordionBox.classList.add('accordion');\n        $accordionBox.querySelectorAll('.accordion-item').forEach(function (elem, idx) {\n            const $item = elem;\n            // $item.classList.add('accordion-item')\n            const id = $accordionBox.getAttribute('id') != null ? String($accordionBox.getAttribute('id')) : '';\n            const isCheck = false;\n            const $label = document.createElement('label');\n            $label.setAttribute('for', `${id}-hide-btn${idx}`);\n            $label.textContent = labelList[idx] !== undefined ? labelList[idx] : parseHTMLcode('&nbsp;');\n            const $btn = document.createElement('span');\n            $btn.textContent = parseHTMLcode('&#9650;');\n            $btn.classList.add('hide-btn');\n            $label.appendChild($btn);\n            const $chbox = document.createElement('input');\n            $chbox.setAttribute('id', `${id}-hide-btn${idx}`);\n            $chbox.setAttribute('type', 'checkbox');\n            $chbox.classList.add('hide-checkbox');\n            $chbox.checked = isCheck;\n            $item.insertAdjacentElement(\"beforebegin\", $label);\n            $item.insertAdjacentElement(\"beforebegin\", $chbox);\n            if (!isCheck) {\n                $btn.textContent = parseHTMLcode('&#9660;');\n                $item.style.display = 'none';\n            }\n            $chbox.addEventListener('input', function () {\n                const isShow = $chbox.checked;\n                $accordionBox.querySelectorAll('.accordion-item').forEach(function (elem) {\n                    let $me = elem;\n                    $me.style.display = 'none';\n                });\n                $accordionBox.querySelectorAll('.hide-checkbox').forEach(function (elem) {\n                    let $me = elem;\n                    $me.checked = false;\n                });\n                $accordionBox.querySelectorAll('.hide-btn').forEach(function (elem) {\n                    let $me = elem;\n                    $me.textContent = parseHTMLcode('&#9660;');\n                });\n                $chbox.checked = isShow;\n                if (isShow) {\n                    $btn.textContent = parseHTMLcode('&#9650;');\n                    $item.style.display = 'block';\n                }\n                else {\n                    $btn.textContent = parseHTMLcode('&#9660;');\n                    $item.style.display = 'none';\n                }\n            });\n        });\n        return this;\n    }\n    multiSlider() {\n        const $me = document.querySelector(this.selector);\n        const id = String($me.getAttribute('id'));\n        const min = String($me.getAttribute('min'));\n        const max = String($me.getAttribute('max'));\n        const step = String($me.getAttribute('step'));\n        const val = String($me.getAttribute('value')).split(',');\n        // 外枠\n        const $sliderBox = document.createElement('div');\n        $sliderBox.classList.add('mulitslider-box');\n        $sliderBox.setAttribute('id', id);\n        $me.insertAdjacentElement(\"beforebegin\", $sliderBox);\n        $me.remove();\n        // メインのスライダ\n        const $slider0 = document.createElement('input');\n        $slider0.classList.add('primary');\n        $slider0.setAttribute('type', 'range');\n        $slider0.setAttribute('min', min);\n        $slider0.setAttribute('max', max);\n        $slider0.setAttribute('step', step);\n        $slider0.value = val[0];\n        // サブのスライダ\n        const $slider1 = document.createElement('input');\n        $slider1.classList.add('secondary');\n        $slider1.setAttribute('type', 'range');\n        $slider1.setAttribute('min', min);\n        $slider1.setAttribute('max', max);\n        $slider1.setAttribute('step', step);\n        $slider1.value = val[1];\n        $sliderBox.appendChild($slider0);\n        $sliderBox.appendChild($slider1);\n        updateSlider();\n        function updateSlider() {\n            const vmin = Math.min(Number($slider0.value), Number($slider1.value));\n            const vmax = Math.max(Number($slider0.value), Number($slider1.value));\n            const min = Number($slider0.getAttribute('min'));\n            const max = Number($slider0.getAttribute('max'));\n            let ratio0 = Math.round((vmin - min) / (max - min) * 100);\n            let ratio1 = Math.round((vmax - min) / (max - min) * 100);\n            $slider0.style.background = `linear-gradient(90deg, #444 ${ratio0}%, #4287f5 ${ratio0}%, #4287f5 ${ratio1}%, #444 ${ratio1}%)`;\n        }\n        $slider0.addEventListener('input', function (elem) {\n            updateSlider();\n        });\n        $slider1.addEventListener('input', function (elem) {\n            updateSlider();\n        });\n        return this;\n    }\n    tab(labelList) {\n        const $tabBox = document.querySelector(this.selector);\n        $tabBox.classList.add('tab');\n        const $selectorBox = document.createElement('div');\n        $selectorBox.classList.add('selector-box');\n        $tabBox.querySelectorAll('.tab-item').forEach(function (elem, idx) {\n            const $item = elem;\n            // $item.classList.add('tab-item')\n            const id = $tabBox.getAttribute('id') != null ? String($tabBox.getAttribute('id')) : '';\n            const $label = document.createElement('label');\n            $label.setAttribute('for', `${id}-tab-btn${idx}`);\n            $label.classList.add('tab-label');\n            $label.textContent = labelList[idx] !== undefined ? labelList[idx] : parseHTMLcode('&nbsp;');\n            const $radioBtn = document.createElement('input');\n            $radioBtn.setAttribute('id', `${id}-tab-btn${idx}`);\n            $radioBtn.setAttribute('type', 'radio');\n            $radioBtn.setAttribute('name', id);\n            if (idx === 0)\n                $radioBtn.checked = true;\n            else\n                $radioBtn.checked = false;\n            $selectorBox.appendChild($radioBtn);\n            $selectorBox.appendChild($label);\n            if (!$radioBtn.checked) {\n                $item.style.display = 'none';\n            }\n            $radioBtn.addEventListener('input', function () {\n                const isShow = $radioBtn.checked;\n                $tabBox.querySelectorAll('.tab-item').forEach(function (elem) {\n                    let $me = elem;\n                    $me.style.display = 'none';\n                });\n                if (isShow) {\n                    $item.style.display = 'block';\n                }\n                else {\n                    $item.style.display = 'none';\n                }\n            });\n        });\n        $tabBox.insertAdjacentElement(\"afterbegin\", $selectorBox);\n        return this;\n    }\n}\nexports.onUI = onUI;\n// export default onUI\n\n\n//# sourceURL=webpack://onui-js/./src/onUI.ts?");
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __webpack_require__("./src/index.ts");
+/******/ 	
+/******/ })()
+;
