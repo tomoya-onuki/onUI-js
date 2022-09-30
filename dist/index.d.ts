@@ -1,4 +1,2 @@
-import { onUI } from "./onUI";
-export * from "./onUI";
-declare const onui: () => onUI;
+declare function onui(name: string): void;
 export default onui;
