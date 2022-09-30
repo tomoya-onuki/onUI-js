@@ -3,6 +3,7 @@ export declare class onUI {
     private toggle0Num;
     private toggle1Num;
     constructor();
+    test(to: string): void;
     select(id: string): this;
     on(eventType: string, callback: Function): this;
     get checked(): boolean;
